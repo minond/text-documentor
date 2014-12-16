@@ -1,7 +1,7 @@
 {
   "name": "text-documentor",
   "version": "0.0.0",
-  "description": "",
+  "description": "a simple tool for generating documentation for JavaScript source",
   "main": "src/text-documentor.js",
   "repository": {
     "type": "git",
