@@ -82,6 +82,15 @@ if (!module.parent) {
         tmpl_file = argv.t || argv.template || tmpl_default,
         tmpl_str = fs.readFileSync(tmpl_file).toString();
 
+    if (argv.h || argv.help) {
+        console.log('Usage: text-documentor [FILE1 [FILE2 [...]]]')
+        console.log('');
+        console.log(' options:');
+        console.log('   - t|template      # template file');
+
+        process.exit(0);
+    }
+
     sources.forEach(function (source) {
         make_doc(source, tmpl_str);
     });
