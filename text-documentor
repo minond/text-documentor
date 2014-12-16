@@ -4,7 +4,8 @@
 'use strict';
 
 var fs = require('fs'),
-    dox = require('dox');
+    dox = require('dox'),
+    join = require('path').join;
 
 var find = require('lodash-node/modern/collections/find'),
     where = require('lodash-node/modern/collections/where'),
@@ -47,13 +48,13 @@ function document_class(file, tmpl) {
     return !endpoints.length ? '' : template(tmpl, {
         base:  {
             name: base ? tag('class', base) : file,
-            link: base && tag('link', base),
+            link: base && tag('link', base)
         },
         endpoints: map(endpoints, function (endpoint) {
             return {
                 name: tag('method', endpoint),
                 link: tag('link', endpoint),
-                params: tags('param', endpoint),
+                params: tags('param', endpoint)
             };
         })
     });
@@ -62,8 +63,9 @@ function document_class(file, tmpl) {
 /**
  * @function make_doc
  * @param {String} source file
+ * @param {String} tmpl_str
  */
-function make_doc(source) {
+function make_doc(source, tmpl_str) {
     if (fs.statSync(source).isFile()) {
         console.log(document_class(source, tmpl_str));
     } else if (fs.statSync(source).isDirectory()) {
@@ -74,15 +76,15 @@ function make_doc(source) {
 }
 
 if (!module.parent) {
-    var join = require('path').join,
-        argv = require('minimist')(process.argv.slice(2));
-
-    var sources = argv._,
+    var argv = require('minimist')(process.argv.slice(2)),
+        sources = argv._,
         tmpl_default = join(__dirname, 'templates', '/simple.md'),
         tmpl_file = argv.t || argv.template || tmpl_default,
         tmpl_str = fs.readFileSync(tmpl_file).toString();
 
-    sources.forEach(make_doc);
+    sources.forEach(function (source) {
+        make_doc(source, tmpl_str);
+    });
 }
 
 module.exports = document_class;
