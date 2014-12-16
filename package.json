@@ -7,6 +7,9 @@
     "type": "git",
     "url": "http://github.com/minond/text-documentor"
   },
+  "bin": {
+    "text-documentor": "text-documentor"
+  },
   "dependencies": {
     "dox": "~0.5.3",
     "lodash-node": "~2.4.1",
