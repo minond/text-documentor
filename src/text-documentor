@@ -1,0 +1,88 @@
+#!/usr/bin/env node
+// vi:syntax=javascript
+
+'use strict';
+
+var fs = require('fs'),
+    dox = require('dox');
+
+var find = require('lodash-node/modern/collections/find'),
+    where = require('lodash-node/modern/collections/where'),
+    map = require('lodash-node/modern/collections/map'),
+    curry = require('lodash-node/modern/functions/curry'),
+    template = require('lodash-node/modern/utilities/template');
+
+/**
+ * @function tag
+ * @param {String} type tag type
+ * @param {Object} doc single index from dox.parseComments
+ * @return {*}
+ */
+function tag(type, doc) {
+    return (find(doc.tags, { type: type }) || {}).string;
+}
+
+/**
+ * @function tags
+ * @param {String} type tag type
+ * @param {Object} doc single index from dox.parseComments
+ * @return {Array}
+ */
+function tags(type, doc) {
+    return where(doc.tags, { type: type });
+}
+
+/**
+ * documents a file
+ * @function document_class
+ * @param {String} file
+ * @param {String} tmpl template
+ * @return {String} makedown representation of yuidoc documentations
+ */
+function document_class(file, tmpl) {
+    var comments = dox.parseComments(fs.readFileSync(file).toString()),
+        base = find(comments, { isConstructor: true }),
+        endpoints = where(comments, curry(tag)('method'));
+
+    return !endpoints.length ? '' : template(tmpl, {
+        base:  {
+            name: base ? tag('class', base) : file,
+            link: base && tag('link', base),
+        },
+        endpoints: map(endpoints, function (endpoint) {
+            return {
+                name: tag('method', endpoint),
+                link: tag('link', endpoint),
+                params: tags('param', endpoint),
+            };
+        })
+    });
+}
+
+/**
+ * @function make_doc
+ * @param {String} source file
+ */
+function make_doc(source) {
+    if (fs.statSync(source).isFile()) {
+        console.log(document_class(source, tmpl_str));
+    } else if (fs.statSync(source).isDirectory()) {
+        fs.readdirSync(source).forEach(function (file) {
+            make_doc(join(source, file), tmpl_str);
+        });
+    }
+}
+
+if (!module.parent) {
+    var join = require('path').join,
+        argv = require('minimist')(process.argv.slice(2));
+
+    var sources = argv._,
+        tmpl_default = join(__dirname, 'templates', '/simple.md'),
+        tmpl_file = argv.t || argv.template || tmpl_default,
+        tmpl_str = fs.readFileSync(tmpl_file).toString();
+
+    sources.forEach(make_doc);
+}
+
+module.exports = document_class;
