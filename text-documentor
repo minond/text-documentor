@@ -11,6 +11,7 @@ var find = require('lodash-node/modern/collections/find'),
     where = require('lodash-node/modern/collections/where'),
     map = require('lodash-node/modern/collections/map'),
     curry = require('lodash-node/modern/functions/curry'),
+    merge = require('lodash-node/modern/objects/merge'),
     template = require('lodash-node/modern/utilities/template');
 
 /**
@@ -42,20 +43,58 @@ function tags(type, doc) {
  */
 function document_class(file, tmpl) {
     var comments = dox.parseComments(fs.readFileSync(file).toString()),
-        base = find(comments, { isConstructor: true }),
+        base = find(comments, { isConstructor: true }) || {},
         methods = where(comments, curry(tag)('method'));
 
     return !methods.length ? '' : template(tmpl, {
-        base:  {
-            name: base ? tag('class', base) : file,
-            link: base && tag('link', base)
-        },
-        methods: map(methods, function (method) {
-            return {
-                name: tag('method', method),
-                link: tag('link', method),
-                params: tags('param', method)
-            };
+        base: get_tag_data(base),
+        methods: map(methods, get_tag_data)
+    });
+}
+
+/**
+ * @funciton get_tag_data
+ * @parma {Object} data
+ * @return {Object}
+ */
+function get_tag_data(data) {
+    // this is what an object looks like:
+    // { tags:
+    //    [ { type: 'link',
+    //        string: 'https://developer.github.com/v3/users/' },
+    //      { type: 'method', string: 'followers' },
+    //      { type: 'param',
+    //        types: [Object],
+    //        name: '[identifier]',
+    //        description: '',
+    //        optional: true },
+    //      { type: 'return', types: [Object], description: '' } ],
+    //   description: { full: '', summary: '', body: '' },
+    //   isPrivate: false,
+    //   isConstructor: false,
+    //   isEvent: false,
+    //   ignore: false,
+    //   line: 29,
+    //   codeStart: 35,
+    //   code: 'followers: aping.https(URL_FOLLOWERS, [\'identifier\'])\n});',
+    //   ctx:
+    //    { type: 'property',
+    //      constructor: undefined,
+    //      cons: undefined,
+    //      name: 'followers',
+    //      value: 'aping.https(URL_FOLLOWERS, [\'identifier\'])',
+    //      string: 'followers' } }
+    return merge(data, {
+        name: tag('class', data) || tag('method', data),
+        link: tag('link', data),
+        params: tags('param', data),
+        description: merge(data.description, {
+            clean: data.description && data.description.summary &&
+                data.description.summary
+                    .replace(/\<br \/\>/g, ' ')
+                    .replace(/\<\/p\>/g, ' ')
+                    .replace(/\<p\>/g, ' ')
+                    .replace(/^\s+|\s+$/g, '')
         })
     });
 }
