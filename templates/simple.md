@@ -1,3 +1,3 @@
 ##### [<%= base.name %>](<%= base.link %>)
-<% endpoints.forEach(function(endpoint) { %>
-* [<%= endpoint.name %>](<%= endpoint.link %>)(<% endpoint.params.forEach(function(param, i) { %><% if (i) { %>, <% } %><%= param.name %><% }); %>)<% }); %>
+<% methods.forEach(function(method) { %>
+* [<%= method.name %>](<%= method.link %>)(<% method.params.forEach(function(param, i) { %><% if (i) { %>, <% } %><%= param.name %><% }); %>)<% }); %>

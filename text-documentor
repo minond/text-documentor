@@ -43,18 +43,18 @@ function tags(type, doc) {
 function document_class(file, tmpl) {
     var comments = dox.parseComments(fs.readFileSync(file).toString()),
         base = find(comments, { isConstructor: true }),
-        endpoints = where(comments, curry(tag)('method'));
+        methods = where(comments, curry(tag)('method'));
 
-    return !endpoints.length ? '' : template(tmpl, {
+    return !methods.length ? '' : template(tmpl, {
         base:  {
             name: base ? tag('class', base) : file,
             link: base && tag('link', base)
         },
-        endpoints: map(endpoints, function (endpoint) {
+        methods: map(methods, function (method) {
             return {
-                name: tag('method', endpoint),
-                link: tag('link', endpoint),
-                params: tags('param', endpoint)
+                name: tag('method', method),
+                link: tag('link', method),
+                params: tags('param', method)
             };
         })
     });
