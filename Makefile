@@ -1,4 +1,4 @@
--include vendor/minond/scaffold/plugins/js.mk
+-include .scaffold/plugins/js.mk
 
 JS_JSCS_FILES = text-documentor
 JS_JSHINT_FILES = text-documentor
